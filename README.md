@@ -53,6 +53,12 @@ search_l2_eval/
 ```bash
 git clone https://github.com/mwang-chwy/search_l2_eval.git
 cd search_l2_eval
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Or for minimal installation (core framework only)
+pip install -r requirements-minimal.txt
 ```
 
 ### 2. Run Evaluation
@@ -187,10 +193,13 @@ Modify `utils/pdm_utils.py` to support different product catalog formats or addi
 
 ## 📝 Requirements
 
-- Python 3.8+
-- pandas
-- numpy
-- PyYAML
+- **Python**: 3.8+
+- **Core Dependencies**: See `requirements.txt`
+  - pandas >= 2.0.0
+  - numpy >= 1.21.0  
+  - PyYAML >= 6.0
+- **Optional ML Components**: lightgbm, scikit-learn (for revenue analysis)
+- **Development**: jupyter, ipykernel (for notebook debugging)
 
 ## 🤝 Contributing
 

@@ -1,0 +1,16 @@
+# Core dependencies
+pandas>=2.0.0
+numpy>=1.21.0
+PyYAML>=6.0
+
+# Machine Learning (for revenue_analysis_mc_level.py)
+lightgbm>=3.3.0
+scikit-learn>=1.0.0
+joblib>=1.2.0
+
+# Development and Testing (optional)
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# Type hints support
+typing-extensions>=4.0.0
