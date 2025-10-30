@@ -1,4 +1,0 @@
-# Minimal requirements for core evaluation framework
-pandas>=2.0.0
-numpy>=1.21.0
-PyYAML>=6.0

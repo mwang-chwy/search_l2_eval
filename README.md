@@ -56,9 +56,6 @@ cd search_l2_eval
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Or for minimal installation (core framework only)
-pip install -r requirements-minimal.txt
 ```
 
 ### 2. Run Evaluation
@@ -198,7 +195,6 @@ Modify `utils/pdm_utils.py` to support different product catalog formats or addi
   - pandas >= 2.0.0
   - numpy >= 1.21.0  
   - PyYAML >= 6.0
-- **Optional ML Components**: lightgbm, scikit-learn (for revenue analysis)
 - **Development**: jupyter, ipykernel (for notebook debugging)
 
 ## 🤝 Contributing
