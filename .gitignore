@@ -62,13 +62,15 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
+# Results and output files
+results/
+
 # Data files (you might want to keep some, adjust as needed)
 # Uncomment the lines below if you want to ignore data files
 # *.csv
 # *.xlsx
 # *.json
 # data/
-# results/
 
 # Log files
 *.log
