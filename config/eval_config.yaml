@@ -1,0 +1,41 @@
+schema_mapping:
+  search_id: query_id
+  part_number: sku
+  rank: rank
+  relevance: label
+  price: price
+  revenue: revenue
+  search_term: query_text  # Optional: will be included if exists
+
+# PDM configuration
+pdm:
+  file_path: "data/PDM Product_2025-10-01-2037.csv"
+  part_number_col: "PART_NUMBER"
+  mc1_col: "MERCH_CLASSIFICATION1"
+  mc2_col: "MERCH_CLASSIFICATION2"
+  price_col: "PRICE"
+  #TO-DO: check how this use
+  purchase_label: 3  # relevance value that indicates purchase
+
+metrics:
+  - name: ndcg
+    params: { k: [10, 36, 72] }
+    required_fields: [search_id, part_number, rank, relevance]
+  - name: revenue_per_search
+    params: { k: [8, 16, 32, 64] }
+    required_fields: [search_id, part_number, rank, revenue]
+  - name: revenue_recall
+    params: { k: [8, 16, 32, 64] }
+    required_fields: [search_id, part_number, rank, revenue]
+  - name: avg_price
+    params: { k: [8, 16, 32, 64] }
+    required_fields: [search_id, part_number, rank, price]
+
+group_by: search_id
+analyze_by_mc: true  # Enable MC-level analysis
+
+output:
+  aggregate: "results/aggregate_metrics.csv"
+  per_query: "results/per_query_metrics.csv"
+  mc1_analysis: "results/mc1_analysis.csv"
+  mc2_analysis: "results/mc2_analysis.csv"

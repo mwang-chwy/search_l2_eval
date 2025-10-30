@@ -1,0 +1,2 @@
+ndcg@10,ndcg@36,ndcg@72,revenue_per_search@8,revenue_per_search@16,revenue_per_search@32,revenue_per_search@64,revenue_recall@8,revenue_recall@16,revenue_recall@32,revenue_recall@64,avg_price@8,avg_price@16,avg_price@32,avg_price@64
+1.0,1.0,1.0,98.0125,98.0125,98.0125,98.0125,1.0,1.0,1.0,1.0,44.835782933333334,44.835782933333334,44.835782933333334,44.835782933333334
