@@ -13,7 +13,6 @@ This framework evaluates search ranking quality using three distinct label types
 - **Revenue Metrics**: Revenue per search, revenue recall, and average price analysis
 - **PDM Integration**: Product catalog enrichment with merchandise categories and pricing
 - **MC Analysis**: Performance breakdown by merchandise categories (MC1/MC2)
-- **Step-by-Step Debugging**: Interactive Jupyter notebook for development
 - **YAML Configuration**: Flexible metric and data source configuration
 
 ## 📁 Project Structure
@@ -108,12 +107,12 @@ Product catalog with SKU, merchandise categories (MC1/MC2), and pricing for reve
 ## ⚙️ Available Metrics
 
 ### Multi-Label NDCG
-- **`ndcg_engagement@k`**: Ranking quality for user engagement (0-3 scale)
+- **`ndcg_engagement@k`**: Ranking quality for user engagement (mutiple scale, e.g., 0-3)
 - **`ndcg_purchase@k`**: Ranking quality for purchase conversions (binary)
 - **`ndcg_autoship@k`**: Ranking quality for subscription conversions (binary)
 
 ### CTR/CVR Metrics  
-- **`ctr@k`**: Fraction of queries with engagement ≥ threshold in top k
+- **`ctr@k`**: Fraction of queries with engagement ≥ click in top k
 - **`cvr@k`**: Fraction of queries with purchase in top k
 
 ### Revenue Metrics
@@ -126,11 +125,29 @@ Product catalog with SKU, merchandise categories (MC1/MC2), and pricing for reve
 Key settings in `config/eval_config.yaml`:
 
 ```yaml
+# Schema mapping to match different column names
+schema_mapping:
+  search_id: query_id
+  part_number: sku
+  engagement: engagement
+  purchase: purchase
+  autoship: autoship
+
+# Metrics configuration
 metrics:
   - name: ndcg_engagement
     params: { k: [10, 36, 72] }
   - name: ctr  
     params: { k: [5, 10, 20], ctr_label: 1 }
+  - name: cvr
+    params: { k: [5, 10, 20], cvr_label: 1 }
+    
+# Output file paths
+output:
+  aggregate: "results/aggregate_metrics.csv"
+  per_query: "results/per_query_metrics.csv"
+  mc1_analysis: "results/mc1_analysis.csv"
+  mc2_analysis: "results/mc2_analysis.csv"
     
 # PDM integration (optional)
 pdm:
