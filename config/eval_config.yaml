@@ -2,7 +2,9 @@ schema_mapping:
   search_id: query_id
   part_number: sku
   rank: rank
-  relevance: label
+  engagement: engagement    # Engagement labels (0,1,2,3)
+  purchase: purchase        # Purchase labels (0,1)
+  autoship: autoship       # Autoship labels (0,1)
   price: price
   revenue: revenue
   search_term: query_text  # Optional: will be included if exists
@@ -14,13 +16,33 @@ pdm:
   mc1_col: "MERCH_CLASSIFICATION1"
   mc2_col: "MERCH_CLASSIFICATION2"
   price_col: "PRICE"
-  #TO-DO: check how this use
-  purchase_label: 3  # relevance value that indicates purchase
+  purchase_label: 1  # purchase column value that indicates purchase (1=purchased, 0=not purchased)
 
 metrics:
-  - name: ndcg
+  # Engagement NDCG using engagement labels (0,1,2,3)
+  - name: ndcg_engagement
     params: { k: [10, 36, 72] }
-    required_fields: [search_id, part_number, rank, relevance]
+    required_fields: [search_id, part_number, rank, engagement]
+  
+  # Purchase NDCG using purchase labels (0,1)  
+  - name: ndcg_purchase
+    params: { k: [10, 36, 72] }
+    required_fields: [search_id, part_number, rank, purchase]
+  
+  # Autoship NDCG using autoship labels (0,1)
+  - name: ndcg_autoship
+    params: { k: [10, 36, 72] }
+    required_fields: [search_id, part_number, rank, autoship]
+  
+  # CTR/CVR metrics
+  - name: ctr
+    params: { k: [5, 10, 20], ctr_label: 1 }
+    required_fields: [search_id, part_number, rank, engagement]
+  - name: cvr
+    params: { k: [5, 10, 20], cvr_label: 1 }
+    required_fields: [search_id, part_number, rank, purchase]
+  
+  # Revenue metrics
   - name: revenue_per_search
     params: { k: [8, 16, 32, 64] }
     required_fields: [search_id, part_number, rank, revenue]

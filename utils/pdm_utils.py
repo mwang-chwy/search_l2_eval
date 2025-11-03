@@ -111,21 +111,25 @@ def assign_search_mc(df: pd.DataFrame) -> pd.DataFrame:
 def calculate_revenue(df: pd.DataFrame, purchase_label: int) -> pd.DataFrame:
     """Calculate revenue based on purchase label
     
-    If relevance == purchase_label:
-        - Use existing revenue from eval_data if available 
-        - Otherwise use price from PDM product table
-    If relevance != purchase_label:
+    Revenue is calculated dynamically from PDM price data:
+    If purchase == purchase_label:
+        - Use price from PDM product table (preferred approach)
+        - Fallback to existing revenue column if present and not null
+    If purchase != purchase_label:
         - Revenue = 0 (no purchase)
     """
     df = df.copy()
     
-    # For purchased items (relevance == purchase_label):
+    # For purchased items (purchase == purchase_label):
     # 1. Use existing revenue if available and not null
     # 2. Otherwise use price from PDM table
     # For non-purchased items: revenue = 0
     
     def get_revenue_value(row):
-        if row['relevance'] != purchase_label:
+        # Check if purchase column exists, fallback to relevance for backward compatibility
+        purchase_col = 'purchase' if 'purchase' in df.columns else 'relevance'
+        
+        if row[purchase_col] != purchase_label:
             return 0
         
         # Check if revenue column exists and has a value
