@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from concurrent.futures import ProcessPoolExecutor
-from utils.io import load_csv, save_csv, load_config
+from utils.io import load_data, save_csv, load_config
 from utils.validation import rename_columns, validate_schema
 from utils.pdm_utils import load_pdm_data, enrich_with_pdm, assign_search_mc, calculate_revenue
 # Import metrics package to register all metrics
@@ -34,8 +34,8 @@ class Evaluator:
         return list(required)
 
     def _prepare_data(self, model_output, eval_dataset):
-        preds = load_csv(model_output)
-        labels = load_csv(eval_dataset)
+        preds = load_data(model_output)
+        labels = load_data(eval_dataset)
         
         merge_cols = [
             self.schema_mapping.get("search_id", "query_id"),
