@@ -52,11 +52,12 @@ class Evaluator:
         df = preds.merge(labels, how='left', on=merge_cols, suffixes=("_pred", ""))
         df = rename_columns(df, self.schema_mapping)
         
-        # Handle missing relevance labels (fill with 0 for unlabeled items)
-        relevance_col = 'relevance' if 'relevance' in df.columns else 'label'
-        if relevance_col in df.columns:
-            df[relevance_col] = df[relevance_col].fillna(0)
-        
+        # Handle missing labels for the three label types (fill with 0 for unlabeled items)
+        label_columns = ['engagement', 'purchase', 'autoship']
+        for col in label_columns:
+            if col in df.columns:
+                df[col] = df[col].fillna(0)
+                
         # Enrich with PDM data if available
         if self.pdm_df is not None:
             print("Enriching data with PDM information...")

@@ -126,10 +126,11 @@ def calculate_revenue(df: pd.DataFrame, purchase_label: int) -> pd.DataFrame:
     # For non-purchased items: revenue = 0
     
     def get_revenue_value(row):
-        # Check if purchase column exists, fallback to relevance for backward compatibility
-        purchase_col = 'purchase' if 'purchase' in df.columns else 'relevance'
+        # Check if purchase column exists
+        if 'purchase' not in df.columns:
+            raise ValueError("Cannot calculate revenue without 'purchase' column. Please ensure your evaluation data has the required purchase column.")
         
-        if row[purchase_col] != purchase_label:
+        if row['purchase'] != purchase_label:
             return 0
         
         # Check if revenue column exists and has a value

@@ -55,12 +55,3 @@ def ndcg_purchase(group_df, k=10):
 def ndcg_autoship(group_df, k=10):
     """Calculate NDCG@k using autoship labels (0,1)"""
     return _calculate_ndcg_for_column(group_df, 'autoship', k)
-
-@register_metric("ndcg")
-def ndcg(group_df, k=10):
-    """Calculate NDCG@k using relevance column (backward compatibility)"""
-    # Try different relevance columns for backward compatibility
-    for col in ['relevance', 'engagement', 'label']:
-        if col in group_df.columns:
-            return _calculate_ndcg_for_column(group_df, col, k)
-    return None
