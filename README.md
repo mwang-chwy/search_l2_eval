@@ -53,15 +53,55 @@ search_l2_eval/
 git clone https://github.com/mwang-chwy/search_l2_eval.git
 cd search_l2_eval
 pip install -r requirements.txt
+# Or install dependencies directly:
+# pip install pandas numpy pyyaml pyarrow
 ```
 
 ### 2. Run Evaluation
 
+The framework automatically detects whether you're using separate files or a merged file. **Version parameter is required** for automatic output organization:
+
+**Separate Files (different file paths):**
 ```bash
 python run_eval.py \
     --model_preds data/sample_model_preds.csv \
     --eval_data data/sample_eval_data.csv \
-    --config config/eval_config.yaml
+    --config config/eval_config.yaml \
+    --version "baseline_v1"
+```
+
+**Merged File (same file path for both parameters):**
+```bash
+python run_eval.py \
+    --model_preds data/sample_unified_data.csv \
+    --eval_data data/sample_unified_data.csv \
+    --config config/eval_config.yaml \
+    --version "p13n_cvr_only"
+```
+
+**Mixed Formats with Custom Results Directory:**
+```bash
+python run_eval.py \
+    --model_preds data/large_predictions.parquet \
+    --eval_data data/labels.csv \
+    --config config/eval_config.yaml \
+    --version "p13n_cvr07_price03" \
+    --results_dir "experiments"
+```
+
+**Multiple Model Evaluation:**
+```bash
+# Model 1: CVR Only
+python run_eval.py \
+    --model_preds data/cvr_only_model.parquet \
+    --config config/eval_config.yaml \
+    --version "p13n_cvr_only"
+
+# Model 2: CVR + Price  
+python run_eval.py \
+    --model_preds data/cvr_price_model.parquet \
+    --config config/eval_config.yaml \
+    --version "p13n_cvr07_price03"
 ```
 
 ### 3. Programmatic Usage
@@ -69,27 +109,52 @@ python run_eval.py \
 ```python
 from evaluator.evaluator import Evaluator
 
-evaluator = Evaluator('config/eval_config.yaml')
+# Version parameter is required for automatic output organization
+evaluator = Evaluator('config/eval_config.yaml', version='baseline_v1')
+
+# Separate files
 results = evaluator.run(
     'data/sample_model_preds.csv',
     'data/sample_eval_data.csv'
 )
 
+# Unified file
+results = evaluator.run(
+    'data/sample_unified_data.csv',
+    'data/sample_unified_data.csv'  # Same file for both parameters
+)
+
 # Results include multiple metric variants
 print(results['aggregate'])  # Overall averages
 print(results['per_query'])  # Per-query details
+print(f"Results saved to: {evaluator.version_dir}")
+
+# Multiple model comparison
+models = [
+    {'version': 'p13n_cvr_only', 'file': 'data/cvr_model.parquet'},
+    {'version': 'p13n_cvr07_price03', 'file': 'data/cvr_price_model.parquet'}
+]
+
+all_results = {}
+for model in models:
+    evaluator = Evaluator('config/eval_config.yaml', version=model['version'])
+    results = evaluator.run(model['file'], None)
+    all_results[model['version']] = results
+    print(f"✅ {model['version']} completed - saved to {evaluator.version_dir}")
 ```
 
 ## 📊 Data Formats
 
-### Model Predictions (`sample_model_preds.csv`)
+**File Format Support**: The framework automatically supports both CSV and Parquet files based on file extension (`.csv` or `.parquet`). You can mix formats - for example, use Parquet predictions with CSV labels.
+
+### Model Predictions (`sample_model_preds.csv` or `.parquet`)
 ```csv
 query_id,sku,rank,prediction_score
 dog_treats_q1,246188,1,0.95
 dog_treats_q1,258374,2,0.87
 ```
 
-### Evaluation Data (`sample_eval_data.csv`)  
+### Evaluation Data (`sample_eval_data.csv` or `.parquet`)  
 ```csv
 query_id,sku,engagement,purchase,autoship
 dog_treats_q1,246188,3,1,1
@@ -97,12 +162,84 @@ dog_treats_q1,258374,2,1,0
 ```
 
 **Label Types:**
-- **`engagement`**: 0=none, 1=view, 2=click, 3=purchase
+- **`engagement`**: 0=none, 1=view, 2=click, 3=high engagement
 - **`purchase`**: 0=no purchase, 1=purchased  
 - **`autoship`**: 0=no subscription, 1=autoship subscription
 
 ### PDM Data (Optional)
 Product catalog with SKU, merchandise categories (MC1/MC2), and pricing for revenue analysis.
+
+### Unified File Support
+You can provide a single file (CSV or Parquet) containing both predictions and labels. The evaluator automatically detects when the same file path is used for both parameters:
+
+```csv
+query_id,sku,rank,prediction_score,engagement,purchase,autoship
+dog_treats_q1,246188,1,0.95,3,1,1
+dog_treats_q1,258374,2,0.87,2,1,0
+```
+
+**Smart Detection**: When `--model_preds` and `--eval_data` point to the same file, the framework automatically treats it as a merged file and skips the merge step. Example: `data/sample_unified_data.csv` or `data/sample_unified_data.parquet`.
+
+## 🏷️ Version Management
+
+The framework requires a version identifier for each evaluation to organize results and prevent overwrites:
+
+### Version Naming Conventions
+- **Model variants**: `p13n_cvr_only`, `p13n_cvr07_price03`, `hybrid_v2`
+- **Experiments**: `baseline_v1`, `experiment_2024_11_04`, `ablation_study_a`  
+- **A/B tests**: `treatment_group_a`, `control_group_b`
+
+### Automatic Organization
+- Each version gets a timestamped directory: `{version}_{YYYYMMDD_HHMMSS}/`
+- **No overwrites** - multiple runs of the same version create separate directories
+- **Metadata tracking** - automatic logging of evaluation parameters and results
+- **Progress tracking** - tqdm progress bars during evaluation
+
+### Version Benefits
+```bash
+# Each run creates separate results
+python run_eval.py --model_preds model_v1.parquet --version "baseline_v1"
+# → results/baseline_v1_20241104_143022/
+
+python run_eval.py --model_preds model_v2.parquet --version "improved_v2"  
+# → results/improved_v2_20241104_143045/
+
+# Same version, different timestamp (no overwrites)
+python run_eval.py --model_preds model_v1_retrain.parquet --version "baseline_v1"
+# → results/baseline_v1_20241104_150312/
+```
+
+## 🛠️ Command Line Options
+
+```bash
+python run_eval.py [OPTIONS]
+
+Required Arguments:
+  --model_preds PATH    Model predictions file (CSV/Parquet)
+  --version STRING      Version identifier for the evaluation
+
+Optional Arguments:  
+  --eval_data PATH      Evaluation data file (optional for merged files)
+  --config PATH         Configuration file (default: config/eval_config.yaml)
+  --results_dir PATH    Base results directory (default: results)
+
+Examples:
+  # Basic usage
+  python run_eval.py --model_preds data/model.parquet --version "baseline_v1"
+  
+  # Custom config and results directory
+  python run_eval.py \
+    --model_preds data/model.parquet \
+    --version "experiment_a" \
+    --config configs/custom.yaml \
+    --results_dir experiments
+    
+  # Separate prediction and evaluation files
+  python run_eval.py \
+    --model_preds data/predictions.parquet \
+    --eval_data data/labels.csv \
+    --version "hybrid_model_v2"
+```
 
 ## ⚙️ Available Metrics
 
@@ -155,12 +292,32 @@ pdm:
   purchase_label: 1
 ```
 
-## 📈 Results
+## 📈 Results Structure
 
-The evaluation produces:
-- **`aggregate_metrics.csv`**: Overall performance averages across all metrics
-- **`per_query_metrics.csv`**: Detailed per-query results for all metrics
+**Version-Organized Output**: Each evaluation automatically creates a timestamped directory to prevent overwrites:
+
+```
+results/
+├── baseline_v1_20241104_143022/
+│   ├── aggregate.csv              # Overall performance averages
+│   ├── per_query.csv             # Detailed per-query results  
+│   ├── mc1_analysis.csv          # Performance by MC1 categories
+│   ├── mc2_analysis.csv          # Performance by MC2 categories
+│   └── evaluation_metadata.csv   # Evaluation details and metadata
+├── p13n_cvr_only_20241104_143045/
+│   ├── aggregate.csv
+│   ├── per_query.csv
+│   ├── mc1_analysis.csv
+│   ├── mc2_analysis.csv
+│   └── evaluation_metadata.csv
+└── model_comparison_latest.csv   # Optional comparison summary
+```
+
+**Result Files:**
+- **`aggregate.csv`**: Overall performance averages across all metrics
+- **`per_query.csv`**: Detailed per-query results for all metrics
 - **`mc1_analysis.csv`** / **`mc2_analysis.csv`**: Performance by merchandise category
+- **`evaluation_metadata.csv`**: Evaluation metadata including version, timestamps, and file paths
 
 ## 🔧 Extending the Framework
 
