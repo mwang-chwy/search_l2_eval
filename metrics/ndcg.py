@@ -28,6 +28,10 @@ def _calculate_ndcg_for_column(group_df, relevance_column, k=10):
     
     relevance_labels = df_sorted[relevance_column].values
     
+    # Check if all labels are zero - return None for undefined NDCG
+    if np.all(relevance_labels == 0):
+        return None  # Will be excluded from aggregate calculations (mean, MC analysis)
+    
     # Calculate DCG using actual ranking
     dcg = 0.0
     for i, rel in enumerate(relevance_labels):
@@ -39,7 +43,8 @@ def _calculate_ndcg_for_column(group_df, relevance_column, k=10):
     for i, rel in enumerate(ideal_relevance):
         idcg += (2**rel - 1) / np.log2(i + 2.0)
     
-    return dcg / idcg if idcg > 0 else 0.0
+    # IDCG should be > 0 since we checked for all-zero labels above
+    return dcg / idcg if idcg > 0 else None
 
 @register_metric("ndcg_engagement")
 def ndcg_engagement(group_df, k=10):

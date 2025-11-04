@@ -244,9 +244,16 @@ Examples:
 ## ⚙️ Available Metrics
 
 ### Multi-Label NDCG
-- **`ndcg_engagement@k`**: Ranking quality for user engagement (mutiple scale, e.g., 0-3)
+- **`ndcg_engagement@k`**: Ranking quality for user engagement (multiple scale, e.g., 0-3)
 - **`ndcg_purchase@k`**: Ranking quality for purchase conversions (binary)
 - **`ndcg_autoship@k`**: Ranking quality for subscription conversions (binary)
+
+**⚠️ Important NDCG Behavior**: When all labels for a query are zero (no relevant items), NDCG returns `None` (null) because the metric is mathematically undefined. These null values are automatically excluded from:
+- Aggregate metric calculations (overall averages)
+- MC1/MC2 analysis (merchandise category breakdowns)
+- Statistical summaries
+
+This prevents bias from queries with no relevant items and provides more accurate performance metrics.
 
 ### CTR/CVR Metrics  
 - **`ctr@k`**: Fraction of queries with engagement ≥ click in top k

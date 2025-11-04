@@ -287,9 +287,9 @@ class Evaluator:
         
         mc_metrics_df = mc_df[metric_cols + [mc_col]]
         
-        # Calculate averages by MC category
+        # Calculate averages by MC category (automatically excludes None values from NDCG)
         avg_metrics_mc = mc_metrics_df.groupby(mc_col).agg({
-            col: 'mean' for col in metric_cols if col != mc_col
+            col: 'mean' for col in metric_cols if col != mc_col  # mean() excludes None/NaN
         }).reset_index()
         
         return avg_metrics_mc
@@ -326,11 +326,12 @@ class Evaluator:
         
         results_df = pd.DataFrame(per_query_results)
         
-        # Calculate aggregate metrics (means, excluding NaN)
+        # Calculate aggregate metrics (means, excluding NaN/None values)
+        # Note: NDCG metrics return None for queries with all-zero labels, these are excluded from aggregation
         aggregate_results = {}
         for col in results_df.columns:
             if col not in ['search_id', 'search_term', 'search_mc1', 'search_mc2'] and pd.api.types.is_numeric_dtype(results_df[col]):
-                aggregate_results[col] = results_df[col].mean()
+                aggregate_results[col] = results_df[col].mean()  # Automatically excludes None values
         
         evaluation_results = {
             'per_query': results_df,
