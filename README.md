@@ -162,7 +162,7 @@ dog_treats_q1,258374,2,1,0
 ```
 
 **Label Types:**
-- **`engagement`**: 0=none, 1=view, 2=click, 3=high engagement
+- **`engagement`**: 0=none, 1=click, 2=atc, 3=purchase
 - **`purchase`**: 0=no purchase, 1=purchased  
 - **`autoship`**: 0=no subscription, 1=autoship subscription
 
