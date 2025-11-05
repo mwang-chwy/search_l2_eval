@@ -65,6 +65,9 @@ Thumbs.db
 # Results and output files
 results/
 
+# Misc folder for ad hoc analysis
+misc/
+
 # Data files - only track sample files and PDM tables
 data/*
 !data/sample*
