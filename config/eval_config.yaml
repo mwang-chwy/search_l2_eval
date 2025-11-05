@@ -1,11 +1,11 @@
 schema_mapping:
-  search_id: query_id
+  search_id: qid_group
   part_number: sku
   rank: rank
-  engagement: engagement    # Engagement labels (0,1,2,3)
-  purchase: purchase        # Purchase labels (0,1)
-  autoship: autoship       # Autoship labels (0,1)
-  search_term: query_text  # Optional: will be included if exists
+  engagement: y_engagement    # Engagement labels (0,1,2,3)
+  purchase: y_purchase        # Purchase labels (0,1)
+  autoship: y_autoship       # Autoship labels (0,1)
+  search_term: query_id  # Optional: will be included if exists
 
 # PDM configuration
 pdm:

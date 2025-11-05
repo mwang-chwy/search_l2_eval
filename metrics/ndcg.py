@@ -20,30 +20,31 @@ def get_dcg(relevance_labels: np.ndarray, ranks: np.ndarray, max_rank: int = Non
 
 def _calculate_ndcg_for_column(group_df, relevance_column, k=10):
     """Generic NDCG calculation for any relevance column"""
-    # Sort by rank (predicted ranking)
-    df_sorted = group_df.sort_values('rank').head(k)
-    
-    if len(df_sorted) == 0 or relevance_column not in df_sorted.columns:
+    if len(group_df) == 0 or relevance_column not in group_df.columns:
         return None  # Will be neglected in aggregated metrics
     
-    relevance_labels = df_sorted[relevance_column].values
+    # Check if there are ANY relevant items in the ENTIRE dataset for this query
+    all_relevance_labels = group_df[relevance_column].values
+    if np.all(all_relevance_labels == 0):
+        return None  # No relevant items exist - NDCG is undefined
     
-    # Check if all labels are zero - return None for undefined NDCG
-    if np.all(relevance_labels == 0):
-        return None  # Will be excluded from aggregate calculations (mean, MC analysis)
+    # Sort by rank (predicted ranking) and take top k for DCG calculation
+    df_sorted = group_df.sort_values('rank').head(k)
+    top_k_relevance = df_sorted[relevance_column].values
     
-    # Calculate DCG using actual ranking
+    # Calculate DCG using actual ranking (top k only)
     dcg = 0.0
-    for i, rel in enumerate(relevance_labels):
+    for i, rel in enumerate(top_k_relevance):
         dcg += (2**rel - 1) / np.log2(i + 2.0)  # i+2 because ranks are 1-based
     
-    # Calculate IDCG using optimal ranking
-    ideal_relevance = np.sort(relevance_labels)[::-1]
+    # Calculate IDCG using optimal ranking from ALL items (not just top k)
+    # This is the key fix: IDCG should use the best k items from the entire dataset
+    ideal_relevance = np.sort(all_relevance_labels)[::-1][:k]  # Best k items from entire set
     idcg = 0.0
     for i, rel in enumerate(ideal_relevance):
         idcg += (2**rel - 1) / np.log2(i + 2.0)
     
-    # IDCG should be > 0 since we checked for all-zero labels above
+    # Return NDCG (can be 0.0 if DCG=0 but IDCG>0, indicating poor ranking)
     return dcg / idcg if idcg > 0 else None
 
 @register_metric("ndcg_engagement")
