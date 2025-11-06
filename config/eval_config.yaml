@@ -44,6 +44,9 @@ metrics:
   - name: revenue_per_search
     params: { k: [8, 16, 32, 64] }
     required_fields: [search_id, part_number, rank, revenue]
+  - name: revenue_per_purchased_search
+    params: { k: [8, 16, 32, 64] }
+    required_fields: [search_id, part_number, rank, purchase, revenue]
   - name: revenue_recall
     params: { k: [8, 16, 32, 64] }
     required_fields: [search_id, part_number, rank, revenue]
